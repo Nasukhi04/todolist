@@ -1,278 +1,336 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-let todos = JSON.parse(localStorage.getItem("todos")) || [];
-let categories = JSON.parse(localStorage.getItem("categories")) || [
-  {id:1,name:"To Do",color:"#4e73df",icon:"📌"},
-  {id:2,name:"In Progress",color:"#f6c23e",icon:"🚀"},
-  {id:3,name:"Done",color:"#1cc88a",icon:"✅"}
-];
-
-let activeFilter = "all";
-let searchKeyword = "";
-
-/* SAVE */
-function saveData(){
-  localStorage.setItem("todos",JSON.stringify(todos));
-  localStorage.setItem("categories",JSON.stringify(categories));
+/* ROOT VARIABLES (LIGHT MODE) */
+:root {
+  --bg-main: #f4f6fb;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #6366f1;
+  --border: #e2e8f0;
 }
 
-/*= ELEMENT */
-const board = document.getElementById("board");
-const taskInput = document.getElementById("task-input");
-const taskDate = document.getElementById("task-date");
-const taskCategory = document.getElementById("task-category");
-
-/* STATS */
-function renderStats(){
-  document.getElementById("stat-total").textContent = todos.length;
-  document.getElementById("stat-done").textContent = todos.filter(t=>t.completed).length;
-  document.getElementById("stat-pending").textContent = todos.filter(t=>!t.completed).length;
+/* DARK MODE VARIABLES                                   */
+body.dark {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent: #818cf8;
+  --border: #334155;
 }
 
-/* CATEGORIES */
-function renderCategories() {
-  taskCategory.innerHTML = "";
-  const filterDiv = document.getElementById("category-filters");
-  filterDiv.innerHTML = "";
-
-  /* Tombol ALL */
-  const allBtn = document.createElement("button");
-  allBtn.innerHTML = "📋 All";
-  allBtn.className = "filter-btn";
-  if (activeFilter === "all") allBtn.classList.add("active");
-
-  allBtn.onclick = () => {
-    activeFilter = "all";
-    renderBoard();
-    renderCategories();
-  };
-
-  filterDiv.appendChild(allBtn);
-
-  /* Render Semua Kategori */
-  categories.forEach(cat => {
-
-    /* Dropdown */
-    const opt = document.createElement("option");
-    opt.value = cat.id;
-    opt.textContent = `${cat.icon} ${cat.name}`;
-    taskCategory.appendChild(opt);
-
-    /* Filter Button */
-    const btn = document.createElement("button");
-    btn.className = "filter-btn";
-    if (activeFilter == cat.id) btn.classList.add("active");
-
-    btn.innerHTML = `
-      ${cat.icon} ${cat.name}
-      <span class="edit-cat">✏</span>
-      <span class="delete-cat">✖</span>
-    `;
-
-    /* Klik Filter */
-    btn.onclick = (e) => {
-      if (e.target.classList.contains("delete-cat") ||
-          e.target.classList.contains("edit-cat")) return;
-
-      activeFilter = cat.id;
-      renderBoard();
-      renderCategories();
-    };
-
-    /*  EDIT CATEGORY */
-    btn.querySelector(".edit-cat").onclick = (e) => {
-      e.stopPropagation();
-
-      const newName = prompt("Edit nama kategori:", cat.name);
-      if (newName === null) return;
-      if (!newName.trim()) return alert("Nama tidak boleh kosong!");
-
-      const newIcon = prompt("Edit icon kategori:", cat.icon) || cat.icon;
-      const newColor = prompt("Edit warna (hex, contoh: #ff0000):", cat.color) || cat.color;
-
-      cat.name = newName.trim();
-      cat.icon = newIcon;
-      cat.color = newColor;
-
-      saveData();
-      renderCategories();
-      renderBoard();
-    };
-
-    /*DELETE CATEGORY */
-    btn.querySelector(".delete-cat").onclick = (e) => {
-      e.stopPropagation();
-
-      if (!confirm("Hapus kategori dan semua task di dalamnya?")) return;
-
-      todos = todos.filter(t => t.categoryId != cat.id);
-      categories = categories.filter(c => c.id != cat.id);
-      activeFilter = "all";
-
-      saveData();
-      renderCategories();
-      renderBoard();
-    };
-
-    filterDiv.appendChild(btn);
-  });
+/* GLOBAL RESET & BASE */
+* {
+  box-sizing: border-box;
 }
 
-
-
-/*  BOARD  */
-function renderBoard(){
-  board.innerHTML="";
-  renderStats();
-
-  categories.forEach(cat=>{
-
-    const column=document.createElement("div");
-    column.className="column";
-
-    const title=document.createElement("h3");
-    title.innerHTML=`${cat.icon} ${cat.name}`;
-    column.appendChild(title);
-
-    // FILTER + SEARCH
-    const catTodos = todos.filter(t=>
-      (activeFilter==="all" || t.categoryId==activeFilter) &&
-      t.categoryId==cat.id &&
-      t.text.toLowerCase().includes(searchKeyword)
-    );
-
-    let doneCount=0;
-
-    catTodos.forEach(todo=>{
-      if(todo.completed) doneCount++;
-
-      const card=document.createElement("div");
-      card.className="card";
-      if(todo.completed) card.classList.add("completed");
-      card.draggable=true;
-      card.style.borderLeft=`5px solid ${cat.color}`;
-
-      card.innerHTML=`
-        <div class="card-top">
-          <input type="checkbox" ${todo.completed?"checked":""}>
-          <span class="task-text">${todo.text}</span>
-        </div>
-        <small>${todo.dueDate || ""}</small>
-        <button class="delete">🗑</button>
-      `;
-
-      // Checkbox
-      card.querySelector("input").onchange=(e)=>{
-        todo.completed=e.target.checked;
-        saveData();
-        renderBoard();
-      };
-
-      // Delete
-      card.querySelector(".delete").onclick=()=>{
-        todos=todos.filter(t=>t.id!==todo.id);
-        saveData();
-        renderBoard();
-      };
-
-      // Drag
-      card.addEventListener("dragstart",e=>{
-        e.dataTransfer.setData("id",todo.id);
-      });
-
-      column.appendChild(card);
-    });
-
-    // DROP AREA
-    column.addEventListener("dragover",e=>e.preventDefault());
-    column.addEventListener("drop",e=>{
-      const id=e.dataTransfer.getData("id");
-      const task=todos.find(t=>t.id==id);
-      if(task){
-        task.categoryId=cat.id;
-        saveData();
-        renderBoard();
-      }
-    });
-
-    // PROGRESS BAR
-    const progress=document.createElement("div");
-    progress.className="progress";
-
-    const bar=document.createElement("div");
-    bar.className="progress-bar";
-    bar.style.width=catTodos.length ? 
-      (doneCount/catTodos.length*100)+"%" : "0%";
-    bar.style.background=cat.color;
-
-    progress.appendChild(bar);
-    column.appendChild(progress);
-
-    board.appendChild(column);
-  });
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  transition: background 0.3s, color 0.3s;
 }
 
-/*  ADD TASK  */
-document.getElementById("add-task-btn").onclick=()=>{
-  if(!taskInput.value.trim()){
-    alert("Task tidak boleh kosong!");
-    return;
+/* HEADER                                                 */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* SEARCH INPUT */
+#search {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+/* DARK MODE SWITCH */
+.switch {
+  position: relative;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #cbd5f5;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.4s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  left: 3px;
+  bottom: 3px;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background: var(--accent);
+}
+
+input:checked + .slider::before {
+  transform: translateX(26px);
+}
+
+/* MAIN CONTAINER */
+.container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 35px 40px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+/* STATISTICS */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-weight: 600;
+  margin-bottom: 35px;
+}
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 25px 0 15px;
+  text-align: center;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* FORM LAYOUTS */
+.add-task,
+.add-category {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.add-task input,
+.add-task select,
+.add-category input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  min-width: 180px;
+}
+
+/* BUTTONS */
+button {
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 20px;
+}
+
+#add-task-btn,
+#add-cat-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+#add-task-btn:hover,
+#add-cat-btn:hover {
+  opacity: 0.9;
+}
+
+/* FILTER BUTTONS */
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* BOARD */
+#board {
+  position: relative;
+  margin-top: 25px;
+  padding-top: 20px;
+}
+
+/* CATEGORY & STAT TITLES */
+#board::before {
+  content: "📂 Category List";
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 10px 0 25px;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+#board::after {
+  content: "📊 Statistik Tugas";
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 45px 0 20px;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* TASK LIST */
+.task-list {
+  margin-top: 25px;
+}
+
+/* TASK ITEM */
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.12),
+    rgba(99, 102, 241, 0.05)
+  );
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: 0.2s ease;
+}
+
+.task:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.task span {
+  flex: 1;
+}
+
+.task.completed {
+  opacity: 0.6;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15),
+    rgba(34, 197, 94, 0.05)
+  );
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.task.completed span {
+  text-decoration: line-through;
+}
+
+/* TASK ACTIONS */
+.task-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.task-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* DARK MODE TASK */
+body.dark .task {
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.18),
+    rgba(30, 41, 59, 0.95)
+  );
+  border: 1px solid #334155;
+}
+
+/* REMOVE INNER CARD STYLES */
+.card-section,
+.column {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
   }
 
-  todos.push({
-    id:Date.now(),
-    text:taskInput.value.trim(),
-    categoryId:taskCategory.value,
-    dueDate:taskDate.value,
-    completed:false
-  });
-
-  taskInput.value="";
-  taskDate.value="";
-
-  saveData();
-  renderBoard();
-};
-
-/*  ADD CATEGORY  */
-document.getElementById("add-cat-btn").onclick=()=>{
-  const name=document.getElementById("cat-name").value.trim();
-  const color=document.getElementById("cat-color").value;
-  const icon=document.getElementById("cat-icon").value.trim() || "📂";
-
-  if(!name){
-    alert("Nama kategori kosong!");
-    return;
+  .stats {
+    flex-direction: column;
+    gap: 10px;
   }
 
-  categories.push({
-    id:Date.now(),
-    name,
-    color,
-    icon
-  });
+  .container {
+    padding: 25px 18px;
+    margin: 20px 12px;
+  }
 
-  document.getElementById("cat-name").value="";
-  document.getElementById("cat-icon").value="";
-
-  saveData();
-  renderCategories();
-  renderBoard();
-};
-
-/*  SEARCH  */
-document.getElementById("search").oninput=(e)=>{
-  searchKeyword=e.target.value.toLowerCase();
-  renderBoard();
-};
-
-/*  DARK MODE  */
-document.getElementById("dark-toggle").onchange=()=>{
-  document.body.classList.toggle("dark");
-};
-
-/*  INIT  */
-renderCategories();
-renderBoard();
-
-});
+  .add-task input,
+  .add-category input {
+    min-width: 100%;
+  }
+}
