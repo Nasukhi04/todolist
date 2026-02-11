@@ -1,0 +1,243 @@
+/* ===============================
+   GLOBAL
+=================================*/
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f9;
+  color: #222;
+  transition: 0.3s ease;
+}
+
+body.dark {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ===============================
+   HEADER
+=================================*/
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 40px;
+  background: linear-gradient(135deg, #4e73df, #1cc88a);
+  color: white;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.header-right {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+#search {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  width: 220px;
+}
+
+/* ===============================
+   STATS
+=================================*/
+
+.stats {
+  display: flex;
+  gap: 30px;
+  padding: 15px 40px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ===============================
+   FORM SECTION
+=================================*/
+
+.add-task,
+.add-category {
+  display: flex;
+  gap: 12px;
+  padding: 10px 40px;
+  flex-wrap: wrap;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  min-width: 160px;
+}
+
+body.dark input,
+body.dark select {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: white;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #4e73df;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* ===============================
+   FILTERS
+=================================*/
+
+.filters {
+  padding: 15px 40px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #e2e8f0;
+  color: #111;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.filter-btn.active {
+  background: #1cc88a;
+  color: white;
+}
+
+body.dark .filter-btn {
+  background: #334155;
+  color: white;
+}
+
+/* ===============================
+   BOARD
+=================================*/
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  padding: 30px 40px 60px;
+}
+
+/* ===============================
+   COLUMN
+=================================*/
+
+.column {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  min-height: 200px;
+  transition: 0.3s;
+}
+
+body.dark .column {
+  background: #1e293b;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.4);
+}
+
+.column h3 {
+  margin-top: 0;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+/* ===============================
+   CARD
+=================================*/
+
+.card {
+  background: #f9fafb;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: 0.2s;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+body.dark .card {
+  background: #334155;
+}
+
+.card.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* ===============================
+   CARD HEADER ROW
+=================================*/
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ===============================
+   DELETE BUTTON
+=================================*/
+
+.card .delete {
+  background: crimson;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* ===============================
+   PROGRESS BAR
+=================================*/
+
+.progress {
+  height: 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  margin-top: 10px;
+}
+
+body.dark .progress {
+  background: #475569;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 4px;
+}

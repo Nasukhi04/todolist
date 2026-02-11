@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TODO LIST nasukhi </title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>🚀 TODO LIST</h1>
+  <div class="header-right">
+    <input type="text" id="search" placeholder="Search task...">
+    <label class="switch">
+      <input type="checkbox" id="dark-toggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</header>
+
+<section class="stats">
+  <div>Total: <span id="stat-total">0</span></div>
+  <div>Done: <span id="stat-done">0</span></div>
+  <div>Pending: <span id="stat-pending">0</span></div>
+</section>
+
+<section class="add-task">
+  <input type="text" id="task-input" placeholder="New task...">
+  <input type="date" id="task-date">
+  <select id="task-category"></select>
+  <button id="add-task-btn">Add Task</button>
+</section>
+
+<section class="add-category">
+  <input type="text" id="cat-name" placeholder="Category name">
+  <input type="color" id="cat-color">
+  <input type="text" id="cat-icon" placeholder="Icon (ex: 📚)">
+  <button id="add-cat-btn">Add Category</button>
+</section>
+
+<section class="filters">
+  <div id="category-filters"></div>
+</section>
+
+
+<section id="board"></section>
+
+<script src="script.js"></script>
+</body>
+</html>
