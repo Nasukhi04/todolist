@@ -10,32 +10,32 @@ let categories = JSON.parse(localStorage.getItem("categories")) || [
 let activeFilter = "all";
 let searchKeyword = "";
 
-/* ================= SAVE ================= */
+/* SAVE */
 function saveData(){
   localStorage.setItem("todos",JSON.stringify(todos));
   localStorage.setItem("categories",JSON.stringify(categories));
 }
 
-/* ================= ELEMENT ================= */
+/*= ELEMENT */
 const board = document.getElementById("board");
 const taskInput = document.getElementById("task-input");
 const taskDate = document.getElementById("task-date");
 const taskCategory = document.getElementById("task-category");
 
-/* ================= STATS ================= */
+/* STATS */
 function renderStats(){
   document.getElementById("stat-total").textContent = todos.length;
   document.getElementById("stat-done").textContent = todos.filter(t=>t.completed).length;
   document.getElementById("stat-pending").textContent = todos.filter(t=>!t.completed).length;
 }
 
-/* ================= CATEGORIES ================= */
+/* CATEGORIES */
 function renderCategories() {
   taskCategory.innerHTML = "";
   const filterDiv = document.getElementById("category-filters");
   filterDiv.innerHTML = "";
 
-  /* ===== Tombol ALL ===== */
+  /* Tombol ALL */
   const allBtn = document.createElement("button");
   allBtn.innerHTML = "📋 All";
   allBtn.className = "filter-btn";
@@ -49,7 +49,7 @@ function renderCategories() {
 
   filterDiv.appendChild(allBtn);
 
-  /* ===== Render Semua Kategori ===== */
+  /* Render Semua Kategori */
   categories.forEach(cat => {
 
     /* Dropdown */
@@ -65,29 +65,48 @@ function renderCategories() {
 
     btn.innerHTML = `
       ${cat.icon} ${cat.name}
+      <span class="edit-cat">✏</span>
       <span class="delete-cat">✖</span>
     `;
 
     /* Klik Filter */
     btn.onclick = (e) => {
-      if (e.target.classList.contains("delete-cat")) return;
+      if (e.target.classList.contains("delete-cat") ||
+          e.target.classList.contains("edit-cat")) return;
+
       activeFilter = cat.id;
       renderBoard();
       renderCategories();
     };
 
-    /* Hapus Kategori */
+    /*  EDIT CATEGORY */
+    btn.querySelector(".edit-cat").onclick = (e) => {
+      e.stopPropagation();
+
+      const newName = prompt("Edit nama kategori:", cat.name);
+      if (newName === null) return;
+      if (!newName.trim()) return alert("Nama tidak boleh kosong!");
+
+      const newIcon = prompt("Edit icon kategori:", cat.icon) || cat.icon;
+      const newColor = prompt("Edit warna (hex, contoh: #ff0000):", cat.color) || cat.color;
+
+      cat.name = newName.trim();
+      cat.icon = newIcon;
+      cat.color = newColor;
+
+      saveData();
+      renderCategories();
+      renderBoard();
+    };
+
+    /*DELETE CATEGORY */
     btn.querySelector(".delete-cat").onclick = (e) => {
       e.stopPropagation();
 
       if (!confirm("Hapus kategori dan semua task di dalamnya?")) return;
 
-      // hapus semua task kategori ini
       todos = todos.filter(t => t.categoryId != cat.id);
-
-      // hapus kategori
       categories = categories.filter(c => c.id != cat.id);
-
       activeFilter = "all";
 
       saveData();
@@ -100,7 +119,8 @@ function renderCategories() {
 }
 
 
-/* ================= BOARD ================= */
+
+/*  BOARD  */
 function renderBoard(){
   board.innerHTML="";
   renderStats();
@@ -192,7 +212,7 @@ function renderBoard(){
   });
 }
 
-/* ================= ADD TASK ================= */
+/*  ADD TASK  */
 document.getElementById("add-task-btn").onclick=()=>{
   if(!taskInput.value.trim()){
     alert("Task tidak boleh kosong!");
@@ -214,7 +234,7 @@ document.getElementById("add-task-btn").onclick=()=>{
   renderBoard();
 };
 
-/* ================= ADD CATEGORY ================= */
+/*  ADD CATEGORY  */
 document.getElementById("add-cat-btn").onclick=()=>{
   const name=document.getElementById("cat-name").value.trim();
   const color=document.getElementById("cat-color").value;
@@ -240,18 +260,18 @@ document.getElementById("add-cat-btn").onclick=()=>{
   renderBoard();
 };
 
-/* ================= SEARCH ================= */
+/*  SEARCH  */
 document.getElementById("search").oninput=(e)=>{
   searchKeyword=e.target.value.toLowerCase();
   renderBoard();
 };
 
-/* ================= DARK MODE ================= */
+/*  DARK MODE  */
 document.getElementById("dark-toggle").onchange=()=>{
   document.body.classList.toggle("dark");
 };
 
-/* ================= INIT ================= */
+/*  INIT  */
 renderCategories();
 renderBoard();
 
