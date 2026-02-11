@@ -1,336 +1,325 @@
-/* ROOT VARIABLES (LIGHT MODE) */
-:root {
-  --bg-main: #f4f6fb;
-  --bg-card: #ffffff;
-  --text-main: #1e293b;
-  --text-secondary: #64748b;
-  --accent: #6366f1;
-  --border: #e2e8f0;
-}
+document.addEventListener("DOMContentLoaded", () => {
 
-/* DARK MODE VARIABLES                                   */
-body.dark {
-  --bg-main: #0f172a;
-  --bg-card: #1e293b;
-  --text-main: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --accent: #818cf8;
-  --border: #334155;
-}
+  /* DATA */
 
-/* GLOBAL RESET & BASE */
-* {
-  box-sizing: border-box;
-}
+  let todos = JSON.parse(localStorage.getItem("todos")) || [];
+  let categories = JSON.parse(localStorage.getItem("categories")) || [
+    { id: 1, name: "To Do",        color: "#4e73df", icon: "📌" },
+    { id: 2, name: "In Progress",  color: "#f6c23e", icon: "🚀" },
+    { id: 3, name: "Done",         color: "#1cc88a", icon: "✅" }
+  ];
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: var(--bg-main);
-  color: var(--text-main);
-  transition: background 0.3s, color 0.3s;
-}
+  let activeFilter = "all";
+  let searchKeyword = "";
 
-/* HEADER                                                 */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
-  color: #fff;
-}
+  /* NORMALISASI DATA LAMA (ANTI ERROR) */
 
-header h1 {
-  margin: 0;
-  font-size: 26px;
-}
+  todos = todos.map(t => ({
+    id: t.id,
+    text: t.text,
+    categoryId: t.categoryId,
+    completed: t.completed || false,
+    reaction: t.reaction || "",
+    dueDate: t.dueDate || "",
+    reminderMinutes: t.reminderMinutes ?? 60,
+    notified: t.notified ?? false
+  }));
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
+  saveData();
 
-/* SEARCH INPUT */
-#search {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
+  /*  NOTIFICATION  */
 
-/* DARK MODE SWITCH */
-.switch {
-  position: relative;
-  width: 50px;
-  height: 24px;
-}
-
-.switch input {
-  display: none;
-}
-
-.slider {
-  position: absolute;
-  inset: 0;
-  background: #cbd5f5;
-  border-radius: 24px;
-  cursor: pointer;
-  transition: 0.4s;
-}
-
-.slider::before {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  left: 3px;
-  bottom: 3px;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
-  background: var(--accent);
-}
-
-input:checked + .slider::before {
-  transform: translateX(26px);
-}
-
-/* MAIN CONTAINER */
-.container {
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 35px 40px;
-  background: var(--bg-card);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-}
-
-/* STATISTICS */
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  font-weight: 600;
-  margin-bottom: 35px;
-}
-
-/* SECTION HEADERS */
-.section-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin: 25px 0 15px;
-  text-align: center;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 18px;
-}
-
-/* FORM LAYOUTS */
-.add-task,
-.add-category {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-
-.add-task input,
-.add-task select,
-.add-category input {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-main);
-  min-width: 180px;
-}
-
-/* BUTTONS */
-button {
-  border: none;
-  cursor: pointer;
-  border-radius: 10px;
-  padding: 10px 20px;
-}
-
-#add-task-btn,
-#add-cat-btn {
-  background: var(--accent);
-  color: #fff;
-}
-
-#add-task-btn:hover,
-#add-cat-btn:hover {
-  opacity: 0.9;
-}
-
-/* FILTER BUTTONS */
-.filters {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: transparent;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.filter-btn.active,
-.filter-btn:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: transparent;
-}
-
-/* BOARD */
-#board {
-  position: relative;
-  margin-top: 25px;
-  padding-top: 20px;
-}
-
-/* CATEGORY & STAT TITLES */
-#board::before {
-  content: "📂 Category List";
-  display: block;
-  text-align: center;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 10px 0 25px;
-  letter-spacing: 0.5px;
-  color: var(--text-main);
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-#board::after {
-  content: "📊 Statistik Tugas";
-  display: block;
-  text-align: center;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 45px 0 20px;
-  letter-spacing: 0.5px;
-  color: var(--text-main);
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* TASK LIST */
-.task-list {
-  margin-top: 25px;
-}
-
-/* TASK ITEM */
-.task {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.12),
-    rgba(99, 102, 241, 0.05)
-  );
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: 0.2s ease;
-}
-
-.task:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-}
-
-.task span {
-  flex: 1;
-}
-
-.task.completed {
-  opacity: 0.6;
-  background: linear-gradient(
-    135deg,
-    rgba(34, 197, 94, 0.15),
-    rgba(34, 197, 94, 0.05)
-  );
-  border-color: rgba(34, 197, 94, 0.4);
-}
-
-.task.completed span {
-  text-decoration: line-through;
-}
-
-/* TASK ACTIONS */
-.task-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.task-actions button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-/* DARK MODE TASK */
-body.dark .task {
-  background: linear-gradient(
-    135deg,
-    rgba(129, 140, 248, 0.18),
-    rgba(30, 41, 59, 0.95)
-  );
-  border: 1px solid #334155;
-}
-
-/* REMOVE INNER CARD STYLES */
-.card-section,
-.column {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    gap: 15px;
+  if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
   }
 
-  .stats {
-    flex-direction: column;
-    gap: 10px;
+  function sendNotification(title, body) {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body });
+    }
   }
 
-  .container {
-    padding: 25px 18px;
-    margin: 20px 12px;
+  /* SAVE  */
+
+  function saveData() {
+    localStorage.setItem("todos", JSON.stringify(todos));
+    localStorage.setItem("categories", JSON.stringify(categories));
   }
 
-  .add-task input,
-  .add-category input {
-    min-width: 100%;
+  /*  ELEMENT  */
+
+  const board        = document.getElementById("board");
+  const taskInput   = document.getElementById("task-input");
+  const taskDate    = document.getElementById("task-date");
+  const taskCategory= document.getElementById("task-category");
+
+  /*  STATS  */
+
+  function renderStats() {
+    document.getElementById("stat-total").textContent = todos.length;
+    document.getElementById("stat-done").textContent =
+      todos.filter(t => t.completed).length;
+    document.getElementById("stat-pending").textContent =
+      todos.filter(t => !t.completed).length;
   }
-}
+
+  /*  DEADLINE CHECK  */
+
+  function checkDeadlines() {
+    const now = Date.now();
+
+    todos.forEach(task => {
+      if (task.completed || !task.dueDate || task.notified) return;
+
+      const deadline = new Date(task.dueDate).getTime();
+      const reminderTime = deadline - (task.reminderMinutes * 60000);
+
+      if (now >= reminderTime) {
+        sendNotification(
+          "⏰ Reminder Task",
+          `"${task.text}" akan deadline dalam ${task.reminderMinutes} menit`
+        );
+        task.notified = true;
+        saveData();
+      }
+    });
+  }
+
+  /*  CATEGORIES  */
+
+  function renderCategories() {
+    taskCategory.innerHTML = "";
+    const filterDiv = document.getElementById("category-filters");
+    filterDiv.innerHTML = "";
+
+    categories.forEach(cat => {
+
+      const opt = document.createElement("option");
+      opt.value = cat.id;
+      opt.textContent = `${cat.icon} ${cat.name}`;
+      taskCategory.appendChild(opt);
+
+      const btn = document.createElement("button");
+      btn.className = "filter-btn";
+      if (activeFilter == cat.id) btn.classList.add("active");
+
+      btn.innerHTML = `
+        ${cat.icon} ${cat.name}
+        <span class="edit-cat">✏</span>
+        <span class="delete-cat">✖</span>
+      `;
+
+      btn.onclick = (e) => {
+        if (
+          e.target.classList.contains("delete-cat") ||
+          e.target.classList.contains("edit-cat")
+        ) return;
+
+        activeFilter = cat.id;
+        renderBoard();
+        renderCategories();
+      };
+
+      btn.querySelector(".edit-cat").onclick = (e) => {
+        e.stopPropagation();
+        const newName = prompt("Edit nama kategori:", cat.name);
+        if (!newName) return;
+
+        cat.name = newName.trim();
+        saveData();
+        renderCategories();
+        renderBoard();
+      };
+
+      btn.querySelector(".delete-cat").onclick = (e) => {
+        e.stopPropagation();
+        if (!confirm("Hapus kategori & task di dalamnya?")) return;
+
+        todos = todos.filter(t => t.categoryId != cat.id);
+        categories = categories.filter(c => c.id != cat.id);
+        activeFilter = "all";
+
+        saveData();
+        renderCategories();
+        renderBoard();
+      };
+
+      filterDiv.appendChild(btn);
+    });
+  }
+
+  /*  BOARD  */
+
+  function renderBoard() {
+    board.innerHTML = "";
+
+    categories.forEach(cat => {
+      const tasksFiltered = todos.filter(t =>
+        t.categoryId == cat.id &&
+        (activeFilter === "all" || activeFilter == cat.id) &&
+        t.text.toLowerCase().includes(searchKeyword)
+      );
+
+      if (
+        tasksFiltered.length === 0 &&
+        activeFilter !== "all" &&
+        activeFilter != cat.id
+      ) return;
+
+      const column = document.createElement("div");
+      column.className = "column";
+
+      column.innerHTML = `
+        <div class="column-header">
+          <div class="column-title">
+            ${cat.icon} ${cat.name}
+            <span class="task-count">${tasksFiltered.length}</span>
+          </div>
+        </div>
+        <div class="task-list"></div>
+      `;
+
+      board.appendChild(column);
+      const taskList = column.querySelector(".task-list");
+
+      tasksFiltered.forEach(task => {
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "task";
+        if (task.completed) taskDiv.classList.add("completed");
+
+        taskDiv.innerHTML = `
+          <span>
+            ${task.text}<br>
+            <small>
+              ⏰ ${
+                task.dueDate
+                  ? new Date(task.dueDate).toLocaleString("id-ID")
+                  : "tanpa deadline"
+              }
+            </small><br>
+            <small>🔔 ${task.reminderMinutes} menit sebelumnya</small>
+            <span class="reaction">${task.reaction}</span>
+          </span>
+          <div class="task-actions">
+            <button onclick="toggleTask(${task.id})">✔</button>
+            <button onclick="editDeadline(${task.id})">⏰</button>
+            <button onclick="pickEmoji(${task.id})">😊</button>
+            <button onclick="deleteTask(${task.id})">🗑️</button>
+          </div>
+        `;
+
+        taskList.appendChild(taskDiv);
+      });
+    });
+
+    renderStats();
+  }
+
+  /*  TASK ACTION  */
+
+  window.toggleTask = function (id) {
+    const task = todos.find(t => t.id == id);
+    if (task) {
+      task.completed = !task.completed;
+      saveData();
+      renderBoard();
+    }
+  };
+
+  window.deleteTask = function (id) {
+    todos = todos.filter(t => t.id != id);
+    saveData();
+    renderBoard();
+  };
+
+  window.pickEmoji = function (id) {
+    const task = todos.find(t => t.id == id);
+    const emoji = prompt(
+      "Masukkan emoji (pakai keyboard HP/PC):",
+      task.reaction
+    );
+
+    if (emoji !== null) {
+      task.reaction = emoji.trim();
+      saveData();
+      renderBoard();
+    }
+  };
+
+  window.editDeadline = function (id) {
+    const task = todos.find(t => t.id == id);
+    if (!task) return;
+
+    const newDate = prompt(
+      "Masukkan deadline (YYYY-MM-DD HH:MM)",
+      task.dueDate
+        ? task.dueDate.replace("T", " ").slice(0, 16)
+        : ""
+    );
+
+    if (newDate) {
+      task.dueDate = newDate.replace(" ", "T");
+      task.notified = false;
+      saveData();
+      renderBoard();
+    }
+  };
+
+  /*  ADD TASK  */
+
+  document.getElementById("add-task-btn").onclick = () => {
+    if (!taskInput.value.trim()) {
+      alert("Task tidak boleh kosong!");
+      return;
+    }
+
+    if (!taskDate.value) {
+      if (!confirm("Task tanpa deadline?")) return;
+    }
+
+    let reminder = prompt(
+      "Ingatkan berapa menit sebelum deadline?\nContoh: 10, 30, 60, 1440",
+      "60"
+    );
+
+    reminder = parseInt(reminder);
+    if (isNaN(reminder) || reminder < 0) reminder = 60;
+
+    todos.push({
+      id: Date.now(),
+      text: taskInput.value.trim(),
+      categoryId: taskCategory.value,
+      dueDate: taskDate.value,
+      completed: false,
+      reaction: "",
+      reminderMinutes: reminder,
+      notified: false
+    });
+
+    taskInput.value = "";
+    taskDate.value = "";
+    saveData();
+    renderBoard();
+  };
+
+  /*  SEARCH & DARK  */
+
+  document.getElementById("search").oninput = (e) => {
+    searchKeyword = e.target.value.toLowerCase();
+    renderBoard();
+  };
+
+  document.getElementById("dark-toggle").onchange = () => {
+    document.body.classList.toggle("dark");
+  };
+
+  /*  INIT  */
+
+  renderCategories();
+  renderBoard();
+  renderStats();
+
+  /* CHECK DEADLINE SETIAP 30 DETIK */
+  setInterval(checkDeadlines, 30000);
+
+});
