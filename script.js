@@ -92,6 +92,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterDiv = document.getElementById("category-filters");
     filterDiv.innerHTML = "";
 
+     // ✅ tombol ALL
+  const allBtn = document.createElement("button");
+  allBtn.className = "filter-btn";
+  if (activeFilter === "all") allBtn.classList.add("active");
+  allBtn.textContent = "📋 All";
+
+  allBtn.onclick = () => {
+    activeFilter = "all";
+    renderBoard();
+    renderCategories();
+  };
+
+  filterDiv.appendChild(allBtn);
+
     categories.forEach(cat => {
 
       const opt = document.createElement("option");
