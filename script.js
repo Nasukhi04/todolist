@@ -4,9 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let todos = JSON.parse(localStorage.getItem("todos")) || [];
   let categories = JSON.parse(localStorage.getItem("categories")) || [
-    { id: 1, name: "To Do",        color: "#4e73df", icon: "📌" },
-    { id: 2, name: "In Progress",  color: "#f6c23e", icon: "🚀" },
-    { id: 3, name: "Done",         color: "#1cc88a", icon: "✅" }
+
   ];
 
   let activeFilter = "all";
@@ -91,6 +89,46 @@ document.addEventListener("DOMContentLoaded", () => {
     taskCategory.innerHTML = "";
     const filterDiv = document.getElementById("category-filters");
     filterDiv.innerHTML = "";
+
+    /* ADD CATEGORY */
+const catName  = document.getElementById("cat-name");
+const catColor = document.getElementById("cat-color");
+const catIcon  = document.getElementById("cat-icon");
+
+document.getElementById("add-cat-btn").onclick = () => {
+  const name = catName.value.trim();
+  const color = catColor.value;
+  const icon = (catIcon.value || "📁").trim();
+
+  if (!name) {
+    alert("Nama kategori tidak boleh kosong!");
+    return;
+  }
+
+  // Cegah nama kategori sama (optional tapi bagus)
+  const exists = categories.some(c => c.name.toLowerCase() === name.toLowerCase());
+  if (exists) {
+    alert("Kategori sudah ada!");
+    return;
+  }
+
+  // bikin id baru aman (lebih baik dari hardcode)
+  const newId = categories.length ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+
+  categories.push({
+    id: newId,
+    name,
+    color,
+    icon
+  });
+
+  saveData();
+  renderCategories();
+  renderBoard();
+
+  catName.value = "";
+  catIcon.value = "";
+};
 
      // ✅ tombol ALL
   const allBtn = document.createElement("button");
